@@ -106,3 +106,76 @@
       z-index: -1;
       animation: backgroundShift 25s ease-in-out infinite;
     }
+
+    @keyframes backgroundShift {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; transform: scale(1.2) rotate(0.5deg); }
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--darker-bg); }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(45deg, var(--primary-indigo), var(--accent-pink));
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(45deg, var(--accent-pink), var(--primary-purple));
+    }
+    
+    a { text-decoration: none; color: inherit; }
+    
+    .fade-in {
+      animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Particle Effect */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--accent-pink);
+      border-radius: 50%;
+      animation: float 20s infinite linear;
+      opacity: 0.4;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.4;
+      }
+      90% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    
