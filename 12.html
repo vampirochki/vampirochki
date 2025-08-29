@@ -65,3 +65,44 @@
       background: linear-gradient(45deg, #6366f1, #8b5cf6);
       border-radius: 10px;
     }
+    
+    :root {
+      --primary-indigo: #6366f1;
+      --primary-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --dark-bg: #0f0f0f;
+      --darker-bg: #0a0a0a;
+      --card-bg: rgba(20, 20, 20, 0.8);
+      --border-color: rgba(99, 102, 241, 0.2);
+      --text-primary: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --drain-silver: #c4c4c4;
+      --drain-black: #1a1a1a;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--darker-bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 30% 40%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 50% 70%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+      animation: backgroundShift 25s ease-in-out infinite;
+    }
