@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ethereal Drain — Draincore Fashion</title>
+  <meta name="description" content="Уникальная draincore одежда от $25. Лимитированные коллекции, кастом дизайн, доставка по всему миру.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    /* Custom Cursor */
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+    
+    body, html {
+      cursor: none !important;
+    }
+    
+    input, textarea, select {
+      cursor: none !important;
+    }
+    
+    .cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #6366f1, #ec4899);
+      pointer-events: none;
+      z-index: 99999;
+      mix-blend-mode: difference;
+      transition: all 0.15s ease;
+      transform: translate(-50%, -50%);
+    }
+    
+    .cursor-follower {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.6);
+      pointer-events: none;
+      z-index: 99998;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: translate(-50%, -50%);
+    }
+    
+    .cursor.hover {
+      transform: translate(-50%, -50%) scale(2.5);
+      background: linear-gradient(45deg, #ec4899, #8b5cf6);
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+    }
+    
+    .cursor.click {
+      transform: translate(-50%, -50%) scale(0.8);
+      background: #ec4899;
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.8);
+    }
+    
+    .cursor.text {
+      transform: translate(-50%, -50%) scaleX(0.3);
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      border-radius: 10px;
+    }
