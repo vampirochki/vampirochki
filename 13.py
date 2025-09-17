@@ -4,9 +4,10 @@ from random import randint
 
 pygame.init()
 
-WIDTH, HEIGHT = 700, 500
-window = display.set_mode((WIDTH, HEIGHT))
-display.set_caption("Космічний шутер")
+info = display.Info()
+WIDTH, HEIGHT = info.current_w, info.current_h
+window = display.set_mode((WIDTH, HEIGHT, FULLSCREEN))
+display.set_caption("Космічний захисник")
 
 clock = time.Clock()
 FPS = 60
@@ -24,7 +25,7 @@ font1 = font.SysFont("Arial", 36)
 font_large = font.SysFont("Arial", 48)
 font_medium = font.SysFont("Arial", 24)
 score = 0
-lost = 0
+lost = 3
 
 game_state = "playing"
 
@@ -37,8 +38,8 @@ class GameSprite(sprite.Sprite):
             self.image = Surface((width, height))
             if "rocket" in image_path:
                 self.image.fill((0, 255, 0))
-            elif "ufo" in image_path:
-                self.image.fill((255, 0, 0))
+            elif "steroid" in image_path:
+                self.image.fill((139, 69, 19))
             elif "bullet" in image_path:
                 self.image.fill((255, 255, 0))
         
@@ -46,7 +47,7 @@ class GameSprite(sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
+ 
     def reset(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
@@ -54,7 +55,8 @@ class Player(GameSprite):
     def __init__(self, image_path, x, y, speed, width, height):
         super().__init__(image_path, x, y, speed, width, height)
         self.last_shot = 0
-        self.shoot_delay = 200
+        self.shoot_delay = 150
+        self.invulnerable_time = 0
     
     def update(self):
         keys = key.get_pressed()
@@ -62,6 +64,10 @@ class Player(GameSprite):
             self.rect.x -= self.speed
         if keys[K_RIGHT] and self.rect.x < WIDTH - self.rect.width - 5:
             self.rect.x += self.speed
+        if keys[K_UP] and self.rect.y > 5:
+            self.rect.y -= self.speed
+        if keys[K_DOWN] and self.rect.y < HEIGHT - self.rect.height - 5:
+            self.rect.y += self.speed
         
         if keys[K_SPACE]:
             current_time = pygame.time.get_ticks()
@@ -70,13 +76,27 @@ class Player(GameSprite):
                 self.last_shot = current_time
 
     def fire(self):
-        bullet = Bullet("bullet.png", self.rect.centerx - 7, self.rect.top, -7, 15, 20)
+        bullet = Bullet("bullet.png", self.rect.centerx - 7, self.rect.top, -8, 15, 20)
         bullets.add(bullet)
 
-class Enemy(GameSprite):
+class Asteroid(GameSprite):
+    def __init__(self, image_path, x, y, speed, width, height):
+        super().__init__(image_path, x, y, speed, width, height)
+        self.rotation = 0
+        self.rotation_speed = randint(-5, 5)
+        self.size = randint(30, 60)
+        self.image = Surface((self.size, self.size))
+        self.image.fill((139, 69, 19))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+ 
     def update(self):
         global lost
         self.rect.y += self.speed
+        self.rect.x += randint(-1, 1)
+        self.rotation += self.rotation_speed
+        
         if self.rect.y > HEIGHT:
             self.rect.y = -randint(80, 120)
             self.rect.x = randint(50, WIDTH - 80)
@@ -197,17 +217,17 @@ class Bullet(GameSprite):
         if self.rect.y < 0:
             self.kill()
 
-player = Player("rocket.png", x=300, y=400, speed=5, width=65, height=65)
+player = Player("rocket.png", x=WIDTH//2, y=HEIGHT=100, speed=6, width=50, height=50)
 
-enemies = sprite.Group()
+asteroids = sprite.Group()
 bullets = sprite.Group()
 boss_bullets = sprite.Group()
 boss_group = sprite.Group()
 
-for _ in range(5):
-    enemy = Enemy("ufo.png", x=randint(50, WIDTH - 80), y=randint(-150, -50), 
-                 speed=randint(2, 5) * 0.7, width=65, height=65)
-    enemies.add(enemy)
+for _ in range(8):
+    asteroid = Asteroid("asteroid.png", x=randint(50, WIDTH - 80), y=randint(-150, -50), 
+                       speed=randint(2, 6), width=50, height=50)
+    asteroids.add(asteroid)
 
 game = True
 boss_spawned = False
@@ -219,138 +239,77 @@ while game:
         if e.type == QUIT:
             game = False
         elif e.type == KEYDOWN:
-            if e.key == K_r and (game_state == "win" or game_state == "lose"):
+            if e.key == K_ESCAPE:
+                game = False
+            elif e.key == K_r and (game_state == "game_over"):
                 score = 0
-                lost = 0
+                lives = 3
                 game_state = "playing"
-                boss_spawned = False
-                boss_defeated = False
-                lose_reason = ""
-                enemies.empty()
+                asteroids.empty()
                 bullets.empty()
-                boss_bullets.empty()
-                boss_group.empty()
-                for _ in range(5):
-                    enemy = Enemy("ufo.png", randint(50, WIDTH - 80), 
-                                randint(-150, -50), randint(2, 5) * 0.7, 65, 65)
-                    enemies.add(enemy)
-                player.rect.x = 300
-                player.rect.y = 400
+                for _ in range(8):
+                    asteroid = Asteroid("asteroid.png", randint(50, WIDTH - 80), 
+                                       randint(-150, -50), randint(2, 6), 50, 50)
+                    asteroids.add(asteroid)
+                player.rect.x = WIDTH//2
+                player.rect.y = HEIGHT-100
                 player.last_shot = 0
+                player.invulnerable_time = 0
 
     window.blit(background, (0, 0))
 
     if game_state == "playing":
         player.update()
-        player.reset()
+        
+        if player.invulnerable_time > 0 and player.invulnerable_time % 10 < 5:
+            pass
+        else:
+            player.reset()
 
-        if score >= 40 and not boss_spawned and not boss_defeated:
-            enemies.empty()
-            boss = Boss("ufo.png", WIDTH // 2 - 75, 50, 3, 150, 100)
-            boss_group.add(boss)
-            boss_spawned = True
-
-        if not boss_spawned:
-            enemies.update()
-            enemies.draw(window)
+        asteroids.update()
+        asteroids.draw(window)
 
         bullets.update()
         bullets.draw(window)
+
+        collisions = sprite.groupcollide(asteroids, bullets, True, True)
+        for _ in collisions:
+            score += 10
+            new_asteroid = Asteroid("asteroid.png", randint(50, WIDTH - 80), 
+                                   randint(-150, -50), randint(2, 6), 50, 50)
+            asteroids.add(new_asteroid)
+
+        player_hit = sprite.spritecollide(player, asteroids, False)
+        if player_hit:
+            if player.take_damage():
+                lives -= 1
+                if lives <= 0:
+                    game_state = "game_over"
+
+        if score > 0 and score % 200 == 0:
+            extra_asteroid = Asteroid("asteroid.png", randint(50, WIDTH - 80), 
+                                     randint(-150, -50), randint(3, 7), 50, 50)
+            asteroids.add(extra_asteroid)
+
+        text_score = font1.render("Бали: " + str(score), True, (255, 255, 255))
+        text_lives = font1.render("Життя: " + str(lives), True, (255, 255, 255))
+        text_controls = font.SysFont("Arial", 20).render("WASD/Стрілки - рух, Пробіл - стрільба, ESC - вихід", True, (200, 200, 200))
         
-        boss_bullets.update()
-        boss_bullets.draw(window)
-        
-        boss_group.update()
-        boss_group.draw(window)
-
-        if not boss_spawned:
-            collisions = sprite.groupcollide(enemies, bullets, True, True)
-            for _ in collisions:
-                score += 1
-
-                if score < 40:
-                    new_enemy = Enemy("ufo.png", randint(50, WIDTH - 80), 
-                                    randint(-150, -50), randint(2, 5) * 0.7, 65, 65)
-                    enemies.add(new_enemy)
-
-        boss_collisions = sprite.groupcollide(boss_group, bullets, False, True)
-        for boss, bullet_list in boss_collisions.items():
-            for _ in bullet_list:
-                if boss.take_damage():
-                    score += 50
-                    boss_defeated = True
-                    boss_spawned = False
-
-        if not boss_spawned:
-            player_hit = sprite.spritecollide(player, enemies, False)
-            if player_hit:
-                lose_reason = "Зіткнення з ворогом"
-                game_state = "lose"
-
-        boss_player_hit = sprite.spritecollide(player, boss_group, False)
-        if boss_player_hit:
-            lose_reason = "Зіткнення з босом"
-            game_state = "lose"
-
-        boss_bullet_hit = sprite.spritecollide(player, boss_bullets, False)
-        if boss_bullet_hit:
-            lose_reason = "Влучання кулі боса"
-            game_state = "lose"
-
-        if boss_defeated:
-            game_state = "win"
-
-        elif lost >= 30:
-            lose_reason = f"Пропущено {lost} ворогів (ліміт: 30)"
-            game_state = "lose"
-
-        for boss in boss_group:
-            boss.draw_health_bar(window)
-
-        text_score = font1.render("Збито: " + str(score), True, (255, 255, 255))
-        text_lost = font1.render("Пропущено: " + str(lost), True, (255, 0, 0))
-        text_controls = font.SysFont("Arial", 20).render("Керування: Стрілки - рух, Пробіл - стрільба", True, (200, 200, 200))
         window.blit(text_score, (10, 20))
-        window.blit(text_lost, (10, 60))
+        window.blit(text_lives, (10, 60))
         window.blit(text_controls, (10, HEIGHT - 30))
-        
-        if score < 40:
-            progress_text = font_medium.render(f"До боса: {40 - score} ворогів", True, (255, 255, 0))
-            window.blit(progress_text, (WIDTH // 2 - 80, HEIGHT - 60))
-        elif boss_spawned and not boss_defeated:
-            boss_warning = font_medium.render("УВАГА! З'ЯВИВСЯ БОС!", True, (255, 255, 0))
-            window.blit(boss_warning, (WIDTH // 2 - 120, HEIGHT - 60))
 
-    elif game_state == "win":
-        win_text = font_large.render("ПЕРЕМОГА!", True, (0, 255, 0))
+    elif game_state == "game_over":
+        game_over_text = font_large.render("ГРА ЗАКІНЧЕНА!", True, (255, 0, 0))
         final_score = font1.render("Фінальний рахунок: " + str(score), True, (255, 255, 255))
-        boss_text = font1.render("Бос переможений!", True, (255, 255, 0))
         restart_text = font1.render("Натисніть R для перезапуску", True, (255, 255, 255))
         
-        win_rect = win_text.get_rect(center=(WIDTH//2, HEIGHT//2 - 75))
+        game_over_rect = game_over_text.get_rect(center=(WIDTH//2, HEIGHT//2 - 75))
         score_rect = final_score.get_rect(center=(WIDTH//2, HEIGHT//2 - 25))
-        boss_rect = boss_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 25))
         restart_rect = restart_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 75))
         
-        window.blit(win_text, win_rect)
+        window.blit(game_over_text, game_over_rect)
         window.blit(final_score, score_rect)
-        window.blit(boss_text, boss_rect)
-        window.blit(restart_text, restart_rect)
-
-    elif game_state == "lose":
-        lose_text = font_large.render("ПРОГРАШ!", True, (255, 0, 0))
-        final_score = font1.render("Фінальний рахунок: " + str(score), True, (255, 255, 255))
-        reason_text = font1.render("Причина: " + lose_reason, True, (255, 255, 0))
-        restart_text = font1.render("Натисніть R для перезапуску", True, (255, 255, 255))
-        
-        lose_rect = lose_text.get_rect(center=(WIDTH//2, HEIGHT//2 - 75))
-        score_rect = final_score.get_rect(center=(WIDTH//2, HEIGHT//2 - 25))
-        reason_rect = reason_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 25))
-        restart_rect = restart_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 75))
-        
-        window.blit(lose_text, lose_rect)
-        window.blit(final_score, score_rect)
-        window.blit(reason_text, reason_rect)
         window.blit(restart_text, restart_rect)
 
     display.update()
